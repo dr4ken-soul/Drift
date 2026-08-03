@@ -1,5 +1,9 @@
 """Shared Genblaze storage configuration for B2 and local development."""
 
+from mimetypes import guess_type
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+
 from genblaze_core import KeyStrategy, ObjectStorageSink, ParquetSink
 from genblaze_s3 import S3StorageBackend
 
@@ -33,6 +37,25 @@ def build_storage() -> object:
 
 
 storage = build_storage()
+
+
+def read_asset_url(asset_url: str) -> tuple[bytes, str]:
+    """Read a stored asset without exposing private B2 credentials or objects."""
+    if asset_url.startswith("file://"):
+        path = Path(unquote(urlparse(asset_url).path))
+        if len(path.parts) > 1 and path.parts[0] == "/" and path.parts[1].endswith(":"):
+            path = Path(path.as_posix().lstrip("/"))
+        return path.read_bytes(), guess_type(path.name)[0] or "application/octet-stream"
+
+    if index_backend is None:
+        raise FileNotFoundError("B2 storage is not configured")
+
+    parsed = urlparse(asset_url)
+    object_path = unquote(parsed.path.lstrip("/"))
+    bucket_prefix = f"{get_settings().b2_bucket}/"
+    if object_path.startswith(bucket_prefix):
+        object_path = object_path[len(bucket_prefix):]
+    return index_backend.get(object_path), guess_type(object_path)[0] or "application/octet-stream"
 
 
 def sync_index_artifacts() -> None:

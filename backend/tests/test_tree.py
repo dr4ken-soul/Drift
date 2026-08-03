@@ -33,5 +33,4 @@ def test_list_runs_joins_run_step_and_asset_tables(tmp_path, monkeypatch) -> Non
     assert records[0]["run_id"] == run_id
     assert records[0]["parent_run_id"] is None
     assert records[0]["prompt"] == "a prompt"
-    assert records[0]["asset_url"] == "https://example.test/image.png"
-
+    assert records[0]["asset_url"] == "http://localhost:8000/media/run-1"

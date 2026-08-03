@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -56,9 +55,8 @@ def list_runs() -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for row in runs.to_dict(orient="records"):
         metadata = _metadata_for(str(row["run_id"]))
-        asset_url = row.get("url") or ""
-        if asset_url.startswith("file://"):
-            asset_url = f"{get_settings().public_api_url}/media/{Path(asset_url[7:]).name}"
+        source_asset_url = row.get("url") or ""
+        asset_url = f"{get_settings().public_api_url}/media/{row['run_id']}" if source_asset_url else ""
         record = {
             "run_id": str(row["run_id"]),
             "parent_run_id": row.get("parent_run_id"),
@@ -73,6 +71,19 @@ def list_runs() -> list[dict[str, Any]]:
         }
         records.append(record)
     return sorted(records, key=lambda record: record["created_at"] or "")
+
+
+def get_asset_source_url(run_id: str) -> str | None:
+    """Return the original private/local asset URL for a run."""
+    hydrate_index_artifacts()
+    assets = _read_table("assets")
+    if assets.empty:
+        return None
+    matches = assets[assets["run_id"].astype(str) == run_id]
+    if matches.empty:
+        return None
+    value = matches.iloc[0].get("url")
+    return str(value) if value else None
 
 
 def get_run(run_id: str) -> dict[str, Any] | None:
