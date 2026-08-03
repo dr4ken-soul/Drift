@@ -10,7 +10,6 @@ from typing import Any
 from uuid import uuid4
 
 from genblaze_core import Asset, Manifest, Modality, Pipeline, StepBuilder, RunBuilder
-from genblaze_core.testing import MockProvider
 from genblaze_gmicloud import GMICloudImageProvider
 from PIL import Image, ImageDraw
 
@@ -79,6 +78,8 @@ def _normalise_result(result: object, provider: str) -> tuple[object, Manifest, 
 
 def _create_local_run(prompt: str, parent_run_id: str | None) -> tuple[object, Manifest, dict[str, Any]]:
     """Run Genblaze locally with a deterministic image when keys are absent."""
+    from genblaze_core.testing import MockProvider
+
     run_id = str(uuid4())
     image_path = _write_demo_image(prompt, run_id)
     digest = hashlib.sha256(image_path.read_bytes()).hexdigest()
