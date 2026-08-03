@@ -11,6 +11,7 @@ from genblaze_core.models.manifest import parse_manifest
 
 from app.config import DATA_DIR, MANIFEST_DIR, get_settings
 from app.services.pipeline import get_cached_metadata
+from app.services.storage import hydrate_index_artifacts
 
 
 def _read_table(table_name: str) -> pd.DataFrame:
@@ -39,6 +40,7 @@ def _metadata_for(run_id: str) -> dict[str, Any]:
 
 def list_runs() -> list[dict[str, Any]]:
     """Return every indexed run with its first image asset and prompt."""
+    hydrate_index_artifacts()
     runs = _read_table("runs")
     steps = _read_table("steps")
     assets = _read_table("assets")

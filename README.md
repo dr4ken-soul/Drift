@@ -45,6 +45,17 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
+The root `.env.example` is the combined reference. The scoped examples remain beside each package because the backend reads `backend/.env` and Next reads `web/.env.local` when run locally.
+
+## Vercel deployment
+
+Deploy this repository as two Vercel projects using the same GitHub repository:
+
+1. Frontend project: set Root Directory to `web` and add only `NEXT_PUBLIC_API_URL` with the deployed backend URL
+2. Backend project: set Root Directory to `backend` and add `GMI_API_KEY`, `B2_KEY_ID`, `B2_APP_KEY`, `B2_BUCKET`, `GROQ_API_KEY`, `FRONTEND_URL`, `PUBLIC_API_URL`, and `DRIFT_DEMO_MODE=false`
+
+The backend has `server.py` and `pyproject.toml` for Vercel's FastAPI runtime. Parquet partitions and manifest sidecars are synchronised to B2 so the API does not rely on Vercel's temporary filesystem between function invocations.
+
 Open `http://localhost:3000`. The live tool is at `/tree`.
 
 ## Verification
@@ -64,4 +75,3 @@ The backend tests cover schema parsing, offline delta caching, and the real part
 The B2 and Genblaze integration is in `backend/app/services/storage.py` and `backend/app/services/pipeline.py`. The Parquet index is read by `backend/app/services/tree.py`. The locked delta system instructions and retry behaviour are in `backend/app/services/delta.py` and documented in `DRIFT_VALIDATION.md`.
 
 The live `from_result()` cache is process scoped. Genblaze manifests can be replayed after a restart, but the current SDK does not expose a chainable `PipelineResult` loader from a stored manifest. If a user selects a parent from a session that has ended, the API returns a clear session error and asks them to start a new lineage.
-

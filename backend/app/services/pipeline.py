@@ -15,7 +15,7 @@ from genblaze_gmicloud import GMICloudImageProvider
 from PIL import Image, ImageDraw
 
 from app.config import DATA_DIR, MANIFEST_DIR, MEDIA_DIR, ensure_data_directories, get_settings
-from app.services.storage import storage
+from app.services.storage import storage, sync_index_artifacts
 
 
 _run_cache: dict[str, object] = {}
@@ -109,6 +109,7 @@ def _create_local_run(prompt: str, parent_run_id: str | None) -> tuple[object, M
     _run_cache[run.run_id] = result
     metadata["asset_url"] = f"{get_settings().public_api_url}/media/{image_path.name}"
     metadata["manifest_uri"] = _save_manifest(manifest, run.run_id)
+    sync_index_artifacts()
     return run, manifest, metadata
 
 
@@ -138,6 +139,7 @@ def create_run(prompt: str, parent_run_id: str | None = None) -> tuple[object, M
         _run_cache[result.run.run_id] = result
         result = _normalise_result(result, "gmicloud")
         _save_manifest(result[1], result[0].run_id)
+        sync_index_artifacts()
     run, manifest, metadata = result
     _run_metadata[run.run_id] = metadata
     return run, manifest, metadata

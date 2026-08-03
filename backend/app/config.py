@@ -8,7 +8,13 @@ from dotenv import load_dotenv
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-DATA_DIR = BACKEND_DIR / "data"
+_configured_data_dir = os.getenv("DRIFT_DATA_DIR", "")
+if _configured_data_dir:
+    DATA_DIR = Path(_configured_data_dir)
+elif os.getenv("VERCEL"):
+    DATA_DIR = Path("/tmp/drift-data")
+else:
+    DATA_DIR = BACKEND_DIR / "data"
 MEDIA_DIR = DATA_DIR / "media"
 MANIFEST_DIR = DATA_DIR / "manifests"
 DELTA_CACHE_DIR = DATA_DIR / "delta_cache"
