@@ -21,6 +21,22 @@ _run_cache: dict[str, object] = {}
 _run_metadata: dict[str, dict[str, Any]] = {}
 
 
+def _link_parent(pipeline: Pipeline, parent_run_id: str | None) -> Pipeline:
+    """Link a parent from memory or from the persisted lineage index.
+
+    Vercel functions are stateless between requests. Genblaze's public
+    ``from_result`` API needs the full in-memory result, so a stored parent ID
+    is linked directly when the result belongs to an earlier invocation.
+    """
+    if not parent_run_id:
+        return pipeline
+    parent = _run_cache.get(parent_run_id)
+    if parent is not None:
+        return pipeline.from_result(parent)
+    pipeline._parent_run_id = parent_run_id
+    return pipeline
+
+
 def _write_demo_image(prompt: str, run_id: str) -> Path:
     """Create a deterministic abstract demo image for offline development."""
     ensure_data_directories()
@@ -93,13 +109,7 @@ def _create_local_run(prompt: str, parent_run_id: str | None) -> tuple[object, M
     )
     provider = MockProvider(assets=[asset])
     pipeline = Pipeline("drift-iteration")
-    if parent_run_id:
-        parent = _run_cache.get(parent_run_id)
-        if parent is None:
-            raise ValueError(
-                f"parent run {parent_run_id} is not available in this backend session"
-            )
-        pipeline = pipeline.from_result(parent)
+    pipeline = _link_parent(pipeline, parent_run_id)
     result = pipeline.step(
         provider,
         model="drift-demo-local",
@@ -123,13 +133,7 @@ def create_run(prompt: str, parent_run_id: str | None = None) -> tuple[object, M
         result = _create_local_run(prompt, parent_run_id)
     else:
         pipeline = Pipeline("drift-iteration")
-        if parent_run_id:
-            parent = _run_cache.get(parent_run_id)
-            if parent is None:
-                raise ValueError(
-                    f"parent run {parent_run_id} is not available in this backend session"
-                )
-            pipeline = pipeline.from_result(parent)
+        pipeline = _link_parent(pipeline, parent_run_id)
         provider = GMICloudImageProvider(api_key=settings.gmi_api_key)
         result = pipeline.step(
             provider,
