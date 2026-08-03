@@ -18,6 +18,7 @@ def build_storage() -> object:
         return parquet_sink
     backend = S3StorageBackend.for_backblaze(
         settings.b2_bucket,
+        region=settings.b2_region,
         key_id=settings.b2_key_id,
         app_key=settings.b2_app_key,
         preflight=False,

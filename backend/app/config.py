@@ -30,6 +30,7 @@ class Settings:
         self.b2_key_id = os.getenv("B2_KEY_ID", "")
         self.b2_app_key = os.getenv("B2_APP_KEY", "")
         self.b2_bucket = os.getenv("B2_BUCKET", "drift-media")
+        self.b2_region = os.getenv("B2_REGION", "us-east-005")
         self.groq_api_key = os.getenv("GROQ_API_KEY", "")
         self.frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
         self.public_api_url = os.getenv("PUBLIC_API_URL", "http://localhost:8000")
