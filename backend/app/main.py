@@ -15,6 +15,7 @@ app = FastAPI(title="Drift API", version="1.0.0", description="Prompt iteration 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_url, "http://localhost:3000"],
+    allow_origin_regex=r"https://([a-z0-9-]+\.)*vercel\.app",
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
@@ -28,4 +29,3 @@ app.include_router(delta_router)
 def health() -> dict[str, str]:
     """Return a lightweight service health response."""
     return {"status": "ok", "mode": "live" if settings.has_generation_credentials and settings.has_b2_credentials else "demo"}
-
