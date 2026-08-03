@@ -4,7 +4,7 @@ genblaze-gmicloud==0.3.5
 genblaze-s3==0.3.6
 httpx==0.28.1
 pandas==3.0.5
-Pillow==12.3.0
+Pillow==11.3.0
 pyarrow==25.0.0
 pytest==9.1.1
 python-dotenv==1.2.2
